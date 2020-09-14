@@ -1,18 +1,23 @@
 import React from "react"
 import CheckBox, { CheckBoxProps } from "./CheckBox"
 
-export type CheckBoxGroupeProps = {
+import { StateType } from "../store"
+
+export type PrefCheckBoxGroupProps = {
   name: string
-  options: { value: string | number; label: string }[]
+  prefMap: NonNullable<StateType["prefMap"]>
 }
 
-const CheckBoxGroupe: React.FC<CheckBoxGroupeProps> = ({ options, name }) => {
+const PrefCheckBoxGroup: React.FC<PrefCheckBoxGroupProps> = ({
+  prefMap,
+  name,
+}) => {
   const onChange: CheckBoxProps["onChange"] = ({ value, checked }) => {
     console.log({ value, checked })
   }
   return (
     <ul>
-      {options.map(({ value, label }) => (
+      {[...prefMap].map(([value, label]) => (
         <li key={value}>
           <CheckBox
             name={name}
@@ -26,4 +31,4 @@ const CheckBoxGroupe: React.FC<CheckBoxGroupeProps> = ({ options, name }) => {
   )
 }
 
-export default React.memo(CheckBoxGroupe)
+export default React.memo(PrefCheckBoxGroup)

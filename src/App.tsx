@@ -1,16 +1,15 @@
 import React, { useReducer, useEffect } from "react"
+
+import { rootReducer } from "./store/"
+import { fetchPref } from "./apiClient"
+
+//components
 import Header from "./components/Header"
 import Main from "./components/Main"
 import Chart from "./components/Chart"
-import CheckBoxGroup, { CheckBoxGroupeProps } from "./components/CheckBoxGroup"
+import PrefCheckBoxGroup from "./components/PrefCheckBoxGroup"
 
 // TODO: ダミーデータ
-const prefOptions: CheckBoxGroupeProps["options"] = [
-  {
-    value: 1,
-    label: "北海道",
-  },
-]
 
 const selectedPref = ["北海道", "東京"]
 
@@ -20,12 +19,32 @@ const data = [
 ]
 
 const App: React.FC = () => {
+  const [state, dispatch] = useReducer(rootReducer, {
+    fetching: false,
+    selected: [],
+    data: null,
+    prefMap: null,
+  })
+
+  useEffect(() => {
+    const getPrefList = async () => {
+      const prefList = await fetchPref()
+      if (!prefList.data) return
+      dispatch({ type: "setPrefMap", payload: prefList.data.result })
+    }
+    getPrefList()
+  }, [])
+
   return (
     <>
       <Header>都道府県別の総人口推移グラフ</Header>
       <Main>
-        <CheckBoxGroup name="prefecture" options={prefOptions} />
-        <Chart selectedPref={selectedPref} data={data} />
+        {state.prefMap && (
+          <>
+            <PrefCheckBoxGroup name="prefecture" prefMap={state.prefMap} />
+            <Chart selectedPref={selectedPref} data={data} />
+          </>
+        )}
       </Main>
     </>
   )
