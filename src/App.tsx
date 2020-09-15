@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect } from "react"
+import React, { useReducer, useEffect, useMemo } from "react"
 
 import { rootReducer } from "./store/"
 import { fetchPref } from "./apiClient"
@@ -9,22 +9,23 @@ import Main from "./components/Main"
 import Chart from "./components/Chart"
 import PrefCheckBoxGroup from "./components/PrefCheckBoxGroup"
 
-// TODO: ダミーデータ
-
-const selectedPref = ["北海道", "東京"]
-
-const data = [
-  { year: 2020, 北海道: 1000, 東京: 2000 },
-  { year: 2022, 北海道: 1500, 東京: 1000 },
-]
-
 const App: React.FC = () => {
-  const [state, dispatch] = useReducer(rootReducer, {
-    fetching: false,
-    selected: [],
-    data: null,
-    prefMap: null,
-  })
+  const [{ selected, fetched, data, prefMap }, dispatch] = useReducer(
+    rootReducer,
+    {
+      fetching: false,
+      selected: [],
+      data: null,
+      prefMap: null,
+      fetched: [],
+    }
+  )
+
+  const selectedPref = useMemo(() => {
+    return prefMap
+      ? selected.map((prefCode) => prefMap.get(prefCode) as string)
+      : []
+  }, [selected, prefMap])
 
   useEffect(() => {
     const getPrefList = async () => {
@@ -39,12 +40,16 @@ const App: React.FC = () => {
     <>
       <Header>都道府県別の総人口推移グラフ</Header>
       <Main>
-        {state.prefMap && (
-          <>
-            <PrefCheckBoxGroup name="prefecture" prefMap={state.prefMap} />
-            <Chart selectedPref={selectedPref} data={data} />
-          </>
+        {prefMap && (
+          <PrefCheckBoxGroup
+            name="prefecture"
+            dispatch={dispatch}
+            prefMap={prefMap}
+            selected={selected}
+            fetched={fetched}
+          />
         )}
+        {data && <Chart selectedPref={selectedPref} data={data} />}
       </Main>
     </>
   )
