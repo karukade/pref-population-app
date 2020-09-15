@@ -2,7 +2,8 @@
 const webpack = require("webpack")
 const path = require("path")
 const HtmlPlugin = require("html-webpack-plugin")
-const CommonConfigWebpackPlugin = require("common-config-webpack-plugin")
+const TsConfigWebpackPlugin = require("ts-config-webpack-plugin")
+const ScssConfigWebpackPlugin = require("scss-config-webpack-plugin")
 
 require("dotenv").config()
 
@@ -11,7 +12,8 @@ module.exports = {
     contentBase: [path.join(__dirname, "dist")],
   },
   plugins: [
-    new CommonConfigWebpackPlugin(),
+    new TsConfigWebpackPlugin(),
+    new ScssConfigWebpackPlugin(),
     new HtmlPlugin({
       template: "./src/index.html",
     }),
