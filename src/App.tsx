@@ -14,7 +14,7 @@ const App: React.FC = () => {
     rootReducer,
     {
       fetching: false,
-      selected: [],
+      selected: new Set([]),
       data: null,
       prefMap: null,
       fetched: [],
@@ -23,9 +23,11 @@ const App: React.FC = () => {
 
   const selectedPref = useMemo(() => {
     return prefMap
-      ? selected.map((prefCode) => prefMap.get(prefCode) as string)
+      ? [...selected]
+          .filter((prefCode) => fetched.includes(prefCode))
+          .map((prefCode) => prefMap.get(prefCode) as string)
       : []
-  }, [selected, prefMap])
+  }, [selected, prefMap, fetched])
 
   useEffect(() => {
     const getPrefList = async () => {

@@ -42,4 +42,4 @@ const Chart: React.FC<ChartProps> = ({ data, selectedPref }) => {
   )
 }
 
-export default Chart
+export default React.memo(Chart)

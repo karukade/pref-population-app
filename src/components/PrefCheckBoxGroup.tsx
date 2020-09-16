@@ -1,13 +1,19 @@
 import React, { useEffect, useState, useCallback, useRef } from "react"
 
 import CheckBox, { CheckBoxProps } from "./CheckBox"
-import {
-  fetchPrefPopulation,
-  FetchPrefPopulationResult,
-  ErrObj,
-} from "../apiClient"
+import { fetchPrefPopulation } from "../apiClient"
 
 import { StateType, Actions } from "../store"
+import styled from "styled-components"
+
+const CheckBoxList = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  > li {
+    padding: 4px 8px;
+  }
+`
 
 export type PrefCheckBoxGroupProps = {
   dispatch: React.Dispatch<Actions>
@@ -19,6 +25,7 @@ export type PrefCheckBoxGroupProps = {
 
 type FetchQueue = { prefCode: number; prefName: string }[]
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const debounce = <P extends unknown[], R>(
   func: (...args: P) => R,
   shouldExecute?: (...args: P) => boolean,
@@ -47,7 +54,7 @@ const executeFetchPopulationQueue = async (
       // handle Too Many Requests
     }
   })
-  if (!res) return
+  if (!res) return // Too Many Requests
   dispatch({ type: "addData", payload: res.map(({ data }) => data) })
 }
 
@@ -55,24 +62,26 @@ const PrefCheckBoxGroup: React.FC<PrefCheckBoxGroupProps> = ({
   prefMap,
   name,
   dispatch,
-  selected,
   fetched,
 }) => {
   const [queue, setQueue] = useState<FetchQueue>([])
   const debouncedFetchPref = useRef(debounce(executeFetchPopulationQueue))
+
+  // TODO onchangeをデバウンスする
+  // TODO queue、fetchedが更新されるたびに関数が生成されてchekboxが無駄に再描画されているので修正する
   const onChange: CheckBoxProps["onChange"] = useCallback(
     ({ value, checked, label }) => {
       if (typeof value !== "number") return
 
       if (!checked) {
-        return // TODO: dispatch removeSelected
-      }
-
-      // 総人口を取得済であればリクエストしない
-      if (fetched.includes(value)) {
-        dispatch({ type: "setSelected", payload: value })
+        dispatch({ type: "removeSelected", payload: value })
         return
       }
+
+      dispatch({ type: "setSelected", payload: value })
+
+      // 総人口を取得済であればリクエストしない
+      if (fetched.includes(value)) return
 
       // リクエストのキューに追加
       if (queue.findIndex((item) => item.prefCode === value) === -1)
@@ -87,7 +96,7 @@ const PrefCheckBoxGroup: React.FC<PrefCheckBoxGroupProps> = ({
   }, [queue, dispatch])
 
   return (
-    <ul>
+    <CheckBoxList>
       {[...prefMap].map(([value, label]) => (
         <li key={value}>
           <CheckBox
@@ -98,7 +107,7 @@ const PrefCheckBoxGroup: React.FC<PrefCheckBoxGroupProps> = ({
           />
         </li>
       ))}
-    </ul>
+    </CheckBoxList>
   )
 }
 

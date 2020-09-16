@@ -1,12 +1,14 @@
-type PopulationData = {
-  year: number
-  value: number
-}
-
+// Apiのレスポンスをステータスとエラー情報を加えてラップするオブジェクト
 type FetchResult<R = null> = {
   err: R extends null ? true : false
   status: number
   data: R
+}
+
+// 該当する年の総人口を表すオブジェクト
+export type PopulationData = {
+  year: number
+  value: number
 }
 
 export type PrefInfo = {
@@ -14,31 +16,34 @@ export type PrefInfo = {
   prefCode: number
 }
 
-export type Prefectures = {
+// ResasApiからのレスポンスのベースとなる型
+type ResasApiResPonseBase<T> = {
   message: null | string
-  result: { prefCode: number; prefName: string }[]
+  result: T
 }
 
-export type Populations = {
-  message: null | string
-  result: {
-    boundaryYear: number
-    data: { label: string; data: PopulationData[] }[]
-  }
-}
+// 都道府県一覧APIからのレスポンス
+export type ResasApiPrefecturesResponse = ResasApiResPonseBase<PrefInfo[]>
 
-export type PopulationAmount = {
+// 人口構成APIからのレスポンス
+export type ResasApiPopulationResponse = ResasApiResPonseBase<{
+  boundaryYear: number
+  data: { label: string; data: PopulationData[] }[]
+}>
+
+// 総人口、都道府県名、コード
+export type PopulationInfo = {
   prefInfo: PrefInfo
   population: PopulationData[]
 }
 
-export type FetchPrefPopulationResult = FetchResult<PopulationAmount>
+export type FetchPrefPopulationResult = FetchResult<PopulationInfo>
 
-export type ErrObj = FetchResult
-
+// ResasAPIへフェッチする関数
+// urlに指定したエンドポイントにリクエストを投げる
 export const fetchDataFromResasApi = <R>(
   url: string
-): Promise<FetchResult<R> | ErrObj> => {
+): Promise<FetchResult<R> | FetchResult> => {
   const baseUrl = "https://opendata.resas-portal.go.jp/api/v1/"
   const init: RequestInit = {
     method: "GET",
@@ -57,12 +62,17 @@ export const fetchDataFromResasApi = <R>(
 }
 
 export const fetchPref = async () => {
-  const res = await fetchDataFromResasApi<Prefectures>("prefectures")
+  const res = await fetchDataFromResasApi<ResasApiPrefecturesResponse>(
+    "prefectures"
+  )
   if (!res.data) return Promise.reject(res)
   return res
 }
 
-const extractPopulation = (result: Populations["result"]["data"]) => {
+// APIのレスポンスから総人口のみを抽出する
+const extractPopulation = (
+  result: ResasApiPopulationResponse["result"]["data"]
+) => {
   const population = result.find(({ label }) => label === "総人口")
   return population && population.data
 }
@@ -72,7 +82,7 @@ export const fetchPrefPopulation = async (prefInfo: PrefInfo) => {
     prefCode: prefInfo.prefCode,
     cityCode: "-",
   })
-  const res = await fetchDataFromResasApi<Populations>(
+  const res = await fetchDataFromResasApi<ResasApiPopulationResponse>(
     `population/composition/perYear${params}`
   )
   if (!res.data) return Promise.reject(res)

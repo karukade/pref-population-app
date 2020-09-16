@@ -1,20 +1,20 @@
-import { Prefectures, PopulationAmount } from "../apiClient"
-
-export type Actions =
-  | { type: "setFetching"; payload: boolean }
-  | { type: "addData"; payload: PopulationAmount[] }
-  | { type: "removeData"; payload: { prefCode: number } }
-  | { type: "setPrefMap"; payload: Prefectures["result"] }
-  | { type: "setFetched"; payload: number }
-  | { type: "setSelected"; payload: number }
+import { ResasApiPrefecturesResponse, PopulationInfo } from "../apiClient"
+import { mergePopulationData, ChartBase } from "./chart"
 
 export type StateType = {
   fetching: boolean
   fetched: number[]
-  selected: number[]
-  data: { year: number; [k: string]: number }[] | null
+  selected: Set<number>
+  data: ChartBase[] | null
   prefMap: Map<number, string> | null
 }
+
+export type Actions =
+  | { type: "setFetching"; payload: boolean }
+  | { type: "addData"; payload: PopulationInfo[] }
+  | { type: "setPrefMap"; payload: ResasApiPrefecturesResponse["result"] }
+  | { type: "setSelected"; payload: number }
+  | { type: "removeSelected"; payload: number }
 
 export const rootReducer = (state: StateType, action: Actions): StateType => {
   switch (action.type) {
@@ -22,13 +22,16 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
       return { ...state, fetching: action.payload }
 
     case "addData": {
-      const [base, ...rest] = action.payload
-      // TODO: apiからのレスポンスをグラフ表示用のデータに変換する
-      return { ...state, data: state.data }
+      const data = mergePopulationData(state.data, action.payload)
+      const fetched = action.payload.map(
+        ({ prefInfo: { prefCode } }) => prefCode
+      )
+      return {
+        ...state,
+        data,
+        fetched: [...state.fetched, ...fetched],
+      }
     }
-
-    case "removeData":
-      return { ...state, data: state.data }
 
     case "setPrefMap": {
       const prefMap = action.payload.map(
@@ -37,13 +40,19 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
       return { ...state, prefMap: new Map(prefMap) }
     }
 
-    case "setFetched": {
-      if (state.fetched.includes(action.payload)) return state
-      return { ...state, fetched: [...state.fetched, action.payload] }
+    case "setSelected": {
+      return {
+        ...state,
+        selected: new Set([...state.selected, action.payload]),
+      }
     }
 
-    case "setSelected": {
-      return { ...state, selected: [...state.fetched, action.payload] }
+    case "removeSelected": {
+      state.selected.delete(action.payload)
+      return {
+        ...state,
+        selected: new Set([...state.selected]),
+      }
     }
   }
 }
