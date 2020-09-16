@@ -4,14 +4,14 @@ import { mergePopulationData, ChartBase } from "./chart"
 export type StateType = {
   fetching: boolean
   fetched: number[]
-  selected: Set<number>
+  selected: number[]
   data: ChartBase[] | null
   prefMap: Map<number, string> | null
 }
 
 export type Actions =
   | { type: "setFetching"; payload: boolean }
-  | { type: "addData"; payload: PopulationInfo[] }
+  | { type: "addData"; payload: PopulationInfo }
   | { type: "setPrefMap"; payload: ResasApiPrefecturesResponse["result"] }
   | { type: "setSelected"; payload: number }
   | { type: "removeSelected"; payload: number }
@@ -23,13 +23,10 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
 
     case "addData": {
       const data = mergePopulationData(state.data, action.payload)
-      const fetched = action.payload.map(
-        ({ prefInfo: { prefCode } }) => prefCode
-      )
       return {
         ...state,
         data,
-        fetched: [...state.fetched, ...fetched],
+        fetched: [...state.fetched, action.payload.prefInfo.prefCode],
       }
     }
 
@@ -41,17 +38,20 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
     }
 
     case "setSelected": {
+      if (state.selected.includes(action.payload)) return state
       return {
         ...state,
-        selected: new Set([...state.selected, action.payload]),
+        selected: [...state.selected, action.payload],
       }
     }
 
     case "removeSelected": {
-      state.selected.delete(action.payload)
+      if (!state.selected.includes(action.payload)) return state
       return {
         ...state,
-        selected: new Set([...state.selected]),
+        selected: state.selected.filter(
+          (prefCode) => prefCode !== action.payload
+        ),
       }
     }
   }

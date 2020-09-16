@@ -1,4 +1,5 @@
-import React from "react"
+import React, { useCallback } from "react"
+import { debounce } from "../utils"
 
 export type CheckBoxProps = {
   value: string | number
@@ -11,19 +12,42 @@ export type CheckBoxProps = {
   }) => void
 }
 
+type ChangeEvent = React.ChangeEvent<HTMLInputElement>
+type KeyPressEvent = React.KeyboardEvent<HTMLInputElement>
+
 const CheckBox: React.FC<CheckBoxProps> = ({
-  onChange,
+  onChange: _onChange,
   label,
   value,
   name,
 }) => {
-  const _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const debouncedOnChange = useCallback(
+    debounce((checked: boolean) => {
+      _onChange({ value, checked, label })
+    }),
+    [_onChange]
+  )
+
+  const onChange = (e: ChangeEvent) => {
     const { checked } = e.target
-    onChange({ value, checked, label })
+    debouncedOnChange(checked)
+  }
+  const onKeyPress = (e: KeyPressEvent) => {
+    if (e.key === "Enter") {
+      const target = e.target as HTMLInputElement
+      target.checked = !target.checked
+      debouncedOnChange(target.checked)
+    }
   }
   return (
     <label>
-      <input type="checkbox" value={value} name={name} onChange={_onChange} />
+      <input
+        type="checkbox"
+        value={value}
+        name={name}
+        onKeyPress={onKeyPress}
+        onChange={onChange}
+      />
       {label}
     </label>
   )
