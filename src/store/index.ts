@@ -3,32 +3,34 @@ import {
   PopulationInfo,
   PrefInfo,
 } from "../apiClient"
-import { mergePopulationData, ChartBase } from "./chart"
+import { mergePopulationData, computeDisplayItems, ChartBase } from "./chart"
 import { getErrorMessage, ErrorPayLoad } from "./error"
 
-export type StateType = {
+export type ActionBase<T extends string, P = undefined> = P extends undefined
+  ? { type: T }
+  : { type: T; payload: P }
+
+export type StateType = Readonly<{
   fetching: boolean
-  fetched: number[]
   fetchItem: PrefInfo | null
-  fetchingItems: number[]
-  selected: number[]
+  fetched: PrefInfo["prefCode"][]
+  fetchingItems: PrefInfo["prefCode"][]
+  selected: PrefInfo["prefCode"][]
+  displayItems: PrefInfo["prefName"][]
   data: ChartBase[] | null
   dataPool: PopulationInfo[]
-  prefMap: Map<number, string>
+  prefMap: Map<PrefInfo["prefCode"], PrefInfo["prefName"]>
   requestError: { message: string; status?: number } | null
-}
+}>
 
 export type Actions =
-  | { type: "setFetching"; payload: boolean }
-  | { type: "addData"; payload: PopulationInfo }
-  | { type: "setPrefMap"; payload: ResasApiPrefecturesResponse["result"] }
-  | { type: "setSelected"; payload: number }
-  | { type: "removeSelected"; payload: number }
-  | {
-      type: "setRequestError"
-      payload: ErrorPayLoad
-    }
-  | { type: "clearRequestError" }
+  | ActionBase<"setFetching", boolean>
+  | ActionBase<"addData", PopulationInfo>
+  | ActionBase<"setPrefMap", ResasApiPrefecturesResponse["result"]>
+  | ActionBase<"setSelected", number>
+  | ActionBase<"removeSelected", number>
+  | ActionBase<"setRequestError", ErrorPayLoad>
+  | ActionBase<"clearRequestError">
 
 export const rootReducer = (state: StateType, action: Actions): StateType => {
   switch (action.type) {
@@ -42,11 +44,20 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
       )
       const fetching = fetchingItems.length > 0
       const dataPool = [...state.dataPool, action.payload]
+      const fetched = [...state.fetched, fetchedPref]
 
       // 他にリクエスト中のデータがあれば更新しない = グラフの描画を抑止
       const data = fetching
         ? state.data
         : mergePopulationData(state.data, dataPool)
+
+      const displayItems = fetching
+        ? state.displayItems
+        : computeDisplayItems({
+            fetched,
+            selected: state.selected,
+            prefMap: state.prefMap,
+          })
 
       return {
         ...state,
@@ -55,15 +66,18 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
         fetchingItems,
         fetching,
         fetched: [...state.fetched, fetchedPref],
+        displayItems,
         requestError: null,
       }
     }
 
     case "setPrefMap": {
-      const prefMap = action.payload.map(
+      const prefMapArray = action.payload.map(
         ({ prefCode, prefName }) => [prefCode, prefName] as const
       )
-      return { ...state, prefMap: new Map(prefMap) }
+      const prefMap = new Map(prefMapArray)
+
+      return { ...state, prefMap }
     }
 
     case "setSelected": {
@@ -82,22 +96,39 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
         ? [...state.fetchingItems, selectedPref]
         : state.fetchingItems
 
+      const selected = [...state.selected, action.payload]
+
+      const displayItems = computeDisplayItems({
+        selected,
+        fetched: state.fetched,
+        prefMap: state.prefMap,
+      })
+
       return {
         ...state,
-        selected: [...state.selected, action.payload],
+        selected,
         fetchItem,
         fetchingItems,
         fetching: fetchingItems.length > 0,
+        displayItems,
       }
     }
 
     case "removeSelected": {
       if (!state.selected.includes(action.payload)) return state
+      const selected = state.selected.filter(
+        (prefCode) => prefCode !== action.payload
+      )
+      const displayItems = computeDisplayItems({
+        selected,
+        fetched: state.fetched,
+        prefMap: state.prefMap,
+      })
+
       return {
         ...state,
-        selected: state.selected.filter(
-          (prefCode) => prefCode !== action.payload
-        ),
+        selected,
+        displayItems,
       }
     }
 

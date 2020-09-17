@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 
+import { useElmWidth } from "../hooks/useElmWidth"
 import Spinner from "./Spinner"
 import { backGround } from "../styles"
 
@@ -32,10 +33,11 @@ const Overlay = styled.div`
 `
 
 const ChartContainer: React.FC<{
-  chart: React.ReactNode
+  renderChart: (width: number) => React.ReactNode
   fetching: boolean
-}> = ({ chart, fetching }) => {
+}> = ({ renderChart, fetching }) => {
   const [spinner, setSpinner] = useState<React.ReactNode>()
+  const [elmRef, width] = useElmWidth<HTMLDivElement>()
 
   // 全てのリクエストが200ms以内に返ってこなければスピナーを表示する
   useEffect(() => {
@@ -52,9 +54,9 @@ const ChartContainer: React.FC<{
   }, [fetching])
 
   return (
-    <Container>
+    <Container ref={elmRef}>
       {spinner}
-      {chart}
+      {renderChart(width)}
     </Container>
   )
 }

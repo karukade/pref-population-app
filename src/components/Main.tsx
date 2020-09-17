@@ -1,10 +1,8 @@
-import React, { useEffect, useReducer, useCallback } from "react"
+import React, { useEffect, useReducer } from "react"
 import styled from "styled-components"
 
 import { rootReducer } from "../store/"
 import { fetchPref } from "../apiClient"
-import { useChartProps } from "../hooks/useChartProps"
-import { useElmWidth } from "../hooks/useElmWidth"
 
 import Chart from "./Chart"
 import ChartContainer from "./ChartContainer"
@@ -19,7 +17,15 @@ const Container = styled.main`
 
 const Main: React.FC = () => {
   const [
-    { selected, fetched, data, prefMap, fetchItem, fetching, requestError },
+    {
+      selected,
+      data,
+      prefMap,
+      fetchItem,
+      fetching,
+      requestError,
+      displayItems,
+    },
     dispatch,
   ] = useReducer(rootReducer, {
     fetching: false,
@@ -27,23 +33,12 @@ const Main: React.FC = () => {
     fetchItem: null,
     fetchingItems: [],
     selected: [],
+    displayItems: [],
     data: null,
     dataPool: [],
     prefMap: new Map(),
     requestError: null,
   })
-
-  const { chartLineColors, selectedPref } = useChartProps({
-    selected,
-    prefMap,
-    fetched,
-  })
-
-  const [elmRef, width] = useElmWidth<HTMLElement>()
-
-  const onCloseErrorBox = useCallback(() => {
-    dispatch({ type: "clearRequestError" })
-  }, [])
 
   useEffect(() => {
     const getPrefList = async () => {
@@ -62,9 +57,9 @@ const Main: React.FC = () => {
   }, [])
 
   return (
-    <Container ref={elmRef}>
+    <Container>
       {requestError && (
-        <ErrorBox message={requestError.message} onClose={onCloseErrorBox} />
+        <ErrorBox message={requestError.message} dispatch={dispatch} />
       )}
       {prefMap && (
         <PrefCheckBoxGroup
@@ -77,13 +72,12 @@ const Main: React.FC = () => {
       )}
       <ChartContainer
         fetching={fetching}
-        chart={
-          data &&
-          chartLineColors && (
+        renderChart={(width) =>
+          data && (
             <Chart
               data={data}
-              selectedPref={selectedPref}
-              lineColor={chartLineColors}
+              displayItems={displayItems}
+              prefMap={prefMap}
               width={width}
             />
           )

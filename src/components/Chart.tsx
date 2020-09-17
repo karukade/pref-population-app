@@ -1,40 +1,38 @@
-import React from "react"
+import React, { useMemo } from "react"
 import { LineChart, XAxis, YAxis, Legend, Line, Label, Tooltip } from "recharts"
 import { font as baseFont } from "../styles"
 
-type ChartData = readonly {
-  year: number
-  [k: string]: number
-}[]
+import { StateType } from "../store"
+
+type LineColors = { [K: string]: { color: string; dash: string } }
 
 type ChartProps = {
-  data: ChartData
-  selectedPref: string[]
-  lineColor: { [K: string]: { color: string; dash: string } }
+  data: NonNullable<StateType["data"]>
+  displayItems: StateType["displayItems"]
+  prefMap: StateType["prefMap"]
   width: number
 }
 
-export const generateLineColors = (prefNames: string[]) =>
-  prefNames.reduce<{ [K: string]: { color: string; dash: string } }>(
-    (colors, name, index) => {
-      return {
-        ...colors,
-        [name]: {
-          color: `hsl(${index * 7.6}, 70%, 50%)`,
-          dash: `${index % 2 === 0 ? "1 0" : "2 2"}`,
-        },
-      }
-    },
-    {}
-  )
+const generateLineColors = (prefMap: StateType["prefMap"]) =>
+  [...prefMap].reduce<LineColors>((colors, [, name], index) => {
+    return {
+      ...colors,
+      [name]: {
+        color: `hsl(${index * 7.6}, 70%, 50%)`,
+        dash: `${index % 2 === 0 ? "1 0" : "2 2"}`,
+      },
+    }
+  }, {})
 const chartMargin = { top: 20, right: 100, left: 30, bottom: 20 }
 
 const Chart: React.FC<ChartProps> = ({
   data,
-  selectedPref,
-  lineColor,
+  displayItems,
+  prefMap,
   width,
 }) => {
+  const lineColors = useMemo(() => generateLineColors(prefMap), [prefMap])
+
   return (
     <LineChart
       width={width - chartMargin.left - chartMargin.right}
@@ -42,13 +40,13 @@ const Chart: React.FC<ChartProps> = ({
       data={data}
       margin={chartMargin}
     >
-      {selectedPref.map((pref, i) => (
+      {displayItems.map((pref, i) => (
         <Line
           key={i}
           type="monotone"
           dataKey={pref}
-          stroke={lineColor[pref].color}
-          strokeDasharray={lineColor[pref].dash}
+          stroke={lineColors[pref].color}
+          strokeDasharray={lineColors[pref].dash}
         />
       ))}
       <Legend

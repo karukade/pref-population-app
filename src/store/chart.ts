@@ -1,4 +1,5 @@
 import { PopulationInfo } from "../apiClient"
+import { StateType } from "./"
 
 export type ChartBase = { year: number; [k: string]: number }
 
@@ -44,4 +45,21 @@ export const mergePopulationData = (
     )
   })
   return data
+}
+
+type ComputeDisplayItems = (arg: {
+  fetched: StateType["fetched"]
+  selected: StateType["selected"]
+  prefMap: StateType["prefMap"]
+}) => StateType["displayItems"]
+
+export const computeDisplayItems: ComputeDisplayItems = ({
+  fetched,
+  selected,
+  prefMap,
+}) => {
+  return selected
+    .filter((prefCode) => fetched.includes(prefCode))
+    .sort((a, b) => a - b)
+    .map((prefCode) => prefMap.get(prefCode) as string)
 }

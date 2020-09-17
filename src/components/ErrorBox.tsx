@@ -1,6 +1,7 @@
 import React from "react"
 import styled from "styled-components"
 import { backGround, font } from "../styles"
+import { Actions } from "../store"
 
 const Box = styled.div`
   position: relative;
@@ -40,20 +41,24 @@ const ButtonWrapper = styled.div`
   right: 16px;
 `
 
-const ErrorBox: React.FC<{ message?: string; onClose: () => void }> = ({
-  message,
-  onClose,
-}) => (
-  <>
-    {message && (
-      <Box>
-        <ButtonWrapper>
-          <CloseButton onClick={onClose} />
-        </ButtonWrapper>
-        {message}
-      </Box>
-    )}
-  </>
-)
+const ErrorBox: React.FC<{
+  message?: string
+  dispatch: React.Dispatch<Actions>
+}> = ({ message, dispatch }) => {
+  return (
+    <>
+      {message && (
+        <Box>
+          <ButtonWrapper>
+            <CloseButton
+              onClick={() => dispatch({ type: "clearRequestError" })}
+            />
+          </ButtonWrapper>
+          {message}
+        </Box>
+      )}
+    </>
+  )
+}
 
 export default ErrorBox
