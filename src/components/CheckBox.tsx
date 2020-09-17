@@ -1,5 +1,6 @@
 import React, { useCallback } from "react"
 import { debounce } from "../utils"
+import styled from "styled-components"
 
 export type CheckBoxProps = {
   value: string | number
@@ -14,6 +15,14 @@ export type CheckBoxProps = {
 
 type ChangeEvent = React.ChangeEvent<HTMLInputElement>
 type KeyPressEvent = React.KeyboardEvent<HTMLInputElement>
+
+const Label = styled.label`
+  display: inline-flex;
+  align-items: center;
+  > * + * {
+    margin-left: 4px;
+  }
+`
 
 const CheckBox: React.FC<CheckBoxProps> = ({
   onChange: _onChange,
@@ -40,7 +49,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({
     }
   }
   return (
-    <label>
+    <Label>
       <input
         type="checkbox"
         value={value}
@@ -48,8 +57,8 @@ const CheckBox: React.FC<CheckBoxProps> = ({
         onKeyPress={onKeyPress}
         onChange={onChange}
       />
-      {label}
-    </label>
+      <span>{label}</span>
+    </Label>
   )
 }
 

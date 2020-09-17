@@ -9,8 +9,9 @@ const CheckBoxList = styled.ul`
   display: flex;
   flex-wrap: wrap;
   list-style: none;
+  margin-bottom: 40px;
   > li {
-    padding: 4px 8px;
+    padding: 8px;
   }
 `
 
