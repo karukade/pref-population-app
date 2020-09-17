@@ -19,16 +19,16 @@ export type PrefCheckBoxGroupProps = {
   dispatch: React.Dispatch<Actions>
   name: string
   prefMap: NonNullable<StateType["prefMap"]>
-  fetched: StateType["fetched"]
+  fetchItem: StateType["fetchItem"]
 }
 
 const PrefCheckBoxGroup: React.FC<PrefCheckBoxGroupProps> = ({
   prefMap,
   name,
   dispatch,
-  fetched,
+  fetchItem,
 }) => {
-  const onChange = usePopulationApi(dispatch, fetched)
+  const onChange = usePopulationApi(dispatch, fetchItem)
   return (
     <CheckBoxList>
       {[...prefMap].map(([value, label]) => (

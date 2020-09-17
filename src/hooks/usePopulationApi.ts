@@ -18,12 +18,10 @@ const fetchPopulation = async (
 
 export const usePopulationApi = (
   dispatch: React.Dispatch<Actions>,
-  fetched: StateType["fetched"]
+  fetchItem: StateType["fetchItem"]
 ): CheckBoxProps["onChange"] => {
-  const [selectedPref, setSelectedPref] = useState<PrefInfo>()
-
   const onChange: CheckBoxProps["onChange"] = useCallback(
-    ({ value, checked, label }) => {
+    ({ value, checked }) => {
       if (typeof value !== "number") return
 
       if (!checked) {
@@ -32,18 +30,14 @@ export const usePopulationApi = (
       }
 
       dispatch({ type: "setSelected", payload: value })
-      setSelectedPref({ prefCode: value, prefName: label })
     },
     [dispatch]
   )
 
   useEffect(() => {
-    if (!selectedPref) return
-    // 総人口を取得済であればリクエストしない
-    if (fetched.includes(selectedPref.prefCode)) return
-
-    fetchPopulation(selectedPref, dispatch)
-  }, [selectedPref, fetched, dispatch])
+    if (!fetchItem) return
+    fetchPopulation(fetchItem, dispatch)
+  }, [fetchItem, dispatch])
 
   return onChange
 }

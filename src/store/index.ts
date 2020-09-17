@@ -1,12 +1,19 @@
-import { ResasApiPrefecturesResponse, PopulationInfo } from "../apiClient"
+import {
+  ResasApiPrefecturesResponse,
+  PopulationInfo,
+  PrefInfo,
+} from "../apiClient"
 import { mergePopulationData, ChartBase } from "./chart"
 
 export type StateType = {
   fetching: boolean
   fetched: number[]
+  fetchItem: PrefInfo | null
+  fetchingItems: number[]
   selected: number[]
   data: ChartBase[] | null
-  prefMap: Map<number, string> | null
+  dataPool: PopulationInfo[]
+  prefMap: Map<number, string>
 }
 
 export type Actions =
@@ -22,11 +29,25 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
       return { ...state, fetching: action.payload }
 
     case "addData": {
-      const data = mergePopulationData(state.data, action.payload)
+      const fetchedPref = action.payload.prefInfo.prefCode
+      const fetchingItems = state.fetchingItems.filter(
+        (prefCode) => prefCode !== fetchedPref
+      )
+      const fetching = fetchingItems.length > 0
+      const dataPool = [...state.dataPool, action.payload]
+
+      // 他にリクエスト中のデータがあれば更新しない = グラフの描画を抑止
+      const data = fetching
+        ? state.data
+        : mergePopulationData(state.data, dataPool)
+
       return {
         ...state,
         data,
-        fetched: [...state.fetched, action.payload.prefInfo.prefCode],
+        dataPool: fetching ? dataPool : [],
+        fetchingItems,
+        fetching,
+        fetched: [...state.fetched, fetchedPref],
       }
     }
 
@@ -39,9 +60,26 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
 
     case "setSelected": {
       if (state.selected.includes(action.payload)) return state
+      const selectedPref = action.payload
+
+      const fetchItem =
+        state.fetched.includes(selectedPref) && state.prefMap.has(selectedPref)
+          ? null
+          : {
+              prefCode: selectedPref,
+              prefName: state.prefMap.get(selectedPref) as string,
+            }
+
+      const fetchingItems = fetchItem
+        ? [...state.fetchingItems, selectedPref]
+        : state.fetchingItems
+
       return {
         ...state,
         selected: [...state.selected, action.payload],
+        fetchItem,
+        fetchingItems,
+        fetching: fetchingItems.length > 0,
       }
     }
 

@@ -15,16 +15,19 @@ const Container = styled.main`
 `
 
 const Main: React.FC = () => {
-  const [{ selected, fetched, data, prefMap }, dispatch] = useReducer(
-    rootReducer,
-    {
-      fetching: false,
-      selected: [],
-      data: null,
-      prefMap: null,
-      fetched: [],
-    }
-  )
+  const [
+    { selected, fetched, data, prefMap, fetchItem, fetchingItems },
+    dispatch,
+  ] = useReducer(rootReducer, {
+    fetching: false,
+    fetched: [],
+    fetchItem: null,
+    fetchingItems: [],
+    selected: [],
+    data: null,
+    dataPool: [],
+    prefMap: new Map(),
+  })
 
   const { chartLineColors, selectedPref } = useChartProps({
     selected,
@@ -36,8 +39,10 @@ const Main: React.FC = () => {
 
   useEffect(() => {
     const getPrefList = async () => {
-      const prefList = await fetchPref()
-      if (!prefList.data) return
+      const prefList = await fetchPref().catch((e) => {
+        // TODO: 都道府県リスト取得エラーをハンドルする
+      })
+      if (!prefList) return
       dispatch({ type: "setPrefMap", payload: prefList.data.result })
     }
     getPrefList()
@@ -50,7 +55,7 @@ const Main: React.FC = () => {
           name="prefecture"
           dispatch={dispatch}
           prefMap={prefMap}
-          fetched={fetched}
+          fetchItem={fetchItem}
         />
       )}
       {data && chartLineColors && (
