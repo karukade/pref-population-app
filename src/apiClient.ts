@@ -3,6 +3,7 @@ type FetchResult<R = null> = {
   err: R extends null ? true : false
   status: number
   data: R
+  meta?: any
 }
 
 // 該当する年の総人口を表すオブジェクト
@@ -52,13 +53,22 @@ export const fetchDataFromResasApi = <R>(
     },
   }
 
-  return fetch(`${baseUrl}${url}`, init).then(async (res) => {
-    if (!res.ok) {
-      return { err: true, status: res.status, data: null } as any
-    }
-    const data: R = await res.json()
-    return { err: false, data, status: res.status }
-  })
+  return fetch(`${baseUrl}${url}`, init)
+    .then(async (res) => {
+      if (!res.ok) {
+        return { err: true, status: res.status, data: null } as any
+      }
+      const data: R = await res.json()
+      return { err: false, data, status: res.status }
+    })
+    .catch((e) => {
+      return {
+        err: true,
+        status: undefined,
+        data: null,
+        meta: navigator.onLine ? e : "offline",
+      } as any
+    })
 }
 
 export const fetchPref = async () => {

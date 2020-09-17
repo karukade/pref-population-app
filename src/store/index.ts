@@ -4,6 +4,7 @@ import {
   PrefInfo,
 } from "../apiClient"
 import { mergePopulationData, ChartBase } from "./chart"
+import { getErrorMessage, ErrorPayLoad } from "./error"
 
 export type StateType = {
   fetching: boolean
@@ -14,6 +15,7 @@ export type StateType = {
   data: ChartBase[] | null
   dataPool: PopulationInfo[]
   prefMap: Map<number, string>
+  requestError: { message: string; status?: number } | null
 }
 
 export type Actions =
@@ -22,6 +24,11 @@ export type Actions =
   | { type: "setPrefMap"; payload: ResasApiPrefecturesResponse["result"] }
   | { type: "setSelected"; payload: number }
   | { type: "removeSelected"; payload: number }
+  | {
+      type: "setRequestError"
+      payload: ErrorPayLoad
+    }
+  | { type: "clearRequestError" }
 
 export const rootReducer = (state: StateType, action: Actions): StateType => {
   switch (action.type) {
@@ -48,6 +55,7 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
         fetchingItems,
         fetching,
         fetched: [...state.fetched, fetchedPref],
+        requestError: null,
       }
     }
 
@@ -90,6 +98,26 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
         selected: state.selected.filter(
           (prefCode) => prefCode !== action.payload
         ),
+      }
+    }
+
+    case "setRequestError": {
+      return {
+        ...state,
+        fetchingItems: [],
+        fetchItem: null,
+        fetching: false,
+        requestError: {
+          message: getErrorMessage(action.payload),
+          status: action.payload.status,
+        },
+      }
+    }
+
+    case "clearRequestError": {
+      return {
+        ...state,
+        requestError: null,
       }
     }
   }

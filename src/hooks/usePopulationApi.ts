@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useEffect, useCallback } from "react"
 import { Actions, StateType } from "../store"
 import { PrefInfo, fetchPrefPopulation } from "../apiClient"
 import { CheckBoxProps } from "../components/CheckBox"
@@ -8,9 +8,10 @@ const fetchPopulation = async (
   dispatch: React.Dispatch<Actions>
 ) => {
   const res = await fetchPrefPopulation(selectedPref).catch((e) => {
-    if (typeof e === "object" && e.status === 429) {
-      // handle Too Many Requests
-    }
+    dispatch({
+      type: "setRequestError",
+      payload: { type: "population", status: e?.status, meta: e?.meta },
+    })
   })
   if (!res) return // Too Many Requests
   dispatch({ type: "addData", payload: res.data })

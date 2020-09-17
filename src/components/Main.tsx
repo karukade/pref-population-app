@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from "react"
+import React, { useEffect, useReducer, useCallback } from "react"
 import styled from "styled-components"
 
 import { rootReducer } from "../store/"
@@ -9,6 +9,7 @@ import { useElmWidth } from "../hooks/useElmWidth"
 import Chart from "./Chart"
 import ChartContainer from "./ChartContainer"
 import PrefCheckBoxGroup from "./PrefCheckBoxGroup"
+import ErrorBox from "./ErrorBox"
 
 const Container = styled.main`
   max-width: 1200px;
@@ -18,7 +19,7 @@ const Container = styled.main`
 
 const Main: React.FC = () => {
   const [
-    { selected, fetched, data, prefMap, fetchItem, fetching },
+    { selected, fetched, data, prefMap, fetchItem, fetching, requestError },
     dispatch,
   ] = useReducer(rootReducer, {
     fetching: false,
@@ -29,6 +30,7 @@ const Main: React.FC = () => {
     data: null,
     dataPool: [],
     prefMap: new Map(),
+    requestError: null,
   })
 
   const { chartLineColors, selectedPref } = useChartProps({
@@ -39,10 +41,17 @@ const Main: React.FC = () => {
 
   const [elmRef, width] = useElmWidth<HTMLElement>()
 
+  const onCloseErrorBox = useCallback(() => {
+    dispatch({ type: "clearRequestError" })
+  }, [])
+
   useEffect(() => {
     const getPrefList = async () => {
       const prefList = await fetchPref().catch((e) => {
-        // TODO: 都道府県リスト取得エラーをハンドルする
+        dispatch({
+          type: "setRequestError",
+          payload: { type: "prefList", status: e?.status, meta: e?.meta },
+        })
       })
       if (!prefList) return
       dispatch({ type: "setPrefMap", payload: prefList.data.result })
@@ -54,6 +63,9 @@ const Main: React.FC = () => {
 
   return (
     <Container ref={elmRef}>
+      {requestError && (
+        <ErrorBox message={requestError.message} onClose={onCloseErrorBox} />
+      )}
       {prefMap && (
         <PrefCheckBoxGroup
           name="prefecture"
