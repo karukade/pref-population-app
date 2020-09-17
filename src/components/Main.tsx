@@ -46,6 +46,8 @@ const Main: React.FC = () => {
       })
       if (!prefList) return
       dispatch({ type: "setPrefMap", payload: prefList.data.result })
+      // グラフがないと何ができるのか分からないので北海道をデフォルトで表示しておく
+      dispatch({ type: "setSelected", payload: 1 })
     }
     getPrefList()
   }, [])
@@ -57,6 +59,7 @@ const Main: React.FC = () => {
           name="prefecture"
           dispatch={dispatch}
           prefMap={prefMap}
+          selected={selected}
           fetchItem={fetchItem}
         />
       )}
