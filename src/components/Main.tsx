@@ -7,16 +7,18 @@ import { useChartProps } from "../hooks/useChartProps"
 import { useElmWidth } from "../hooks/useElmWidth"
 
 import Chart from "./Chart"
+import ChartContainer from "./ChartContainer"
 import PrefCheckBoxGroup from "./PrefCheckBoxGroup"
 
 const Container = styled.main`
   max-width: 1200px;
-  margin: 40px auto;
+  margin: auto;
+  padding: 20px;
 `
 
 const Main: React.FC = () => {
   const [
-    { selected, fetched, data, prefMap, fetchItem, fetchingItems },
+    { selected, fetched, data, prefMap, fetchItem, fetching },
     dispatch,
   ] = useReducer(rootReducer, {
     fetching: false,
@@ -58,14 +60,20 @@ const Main: React.FC = () => {
           fetchItem={fetchItem}
         />
       )}
-      {data && chartLineColors && (
-        <Chart
-          data={data}
-          selectedPref={selectedPref}
-          lineColor={chartLineColors}
-          width={width}
-        />
-      )}
+      <ChartContainer
+        fetching={fetching}
+        chart={
+          data &&
+          chartLineColors && (
+            <Chart
+              data={data}
+              selectedPref={selectedPref}
+              lineColor={chartLineColors}
+              width={width}
+            />
+          )
+        }
+      />
     </Container>
   )
 }

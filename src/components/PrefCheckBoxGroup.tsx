@@ -2,6 +2,7 @@ import React from "react"
 import styled from "styled-components"
 
 import CheckBox from "./CheckBox"
+import CheckBoxesSkeletons from "./CheckBoxesSkeletons"
 import { usePopulationApi } from "../hooks/usePopulationApi"
 import { StateType, Actions } from "../store"
 
@@ -11,7 +12,7 @@ const CheckBoxList = styled.ul`
   list-style: none;
   margin-bottom: 40px;
   > li {
-    padding: 8px;
+    margin: 8px;
   }
 `
 
@@ -29,18 +30,15 @@ const PrefCheckBoxGroup: React.FC<PrefCheckBoxGroupProps> = ({
   fetchItem,
 }) => {
   const onChange = usePopulationApi(dispatch, fetchItem)
+  const checkBoxes = () =>
+    [...prefMap].map(([value, label]) => (
+      <li key={value}>
+        <CheckBox name={name} value={value} label={label} onChange={onChange} />
+      </li>
+    ))
   return (
     <CheckBoxList>
-      {[...prefMap].map(([value, label]) => (
-        <li key={value}>
-          <CheckBox
-            name={name}
-            value={value}
-            label={label}
-            onChange={onChange}
-          />
-        </li>
-      ))}
+      {prefMap.size > 0 ? checkBoxes() : <CheckBoxesSkeletons />}
     </CheckBoxList>
   )
 }

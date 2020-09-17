@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useState } from "react"
 import { debounce } from "../utils"
 import styled from "styled-components"
 
@@ -6,6 +6,7 @@ export type CheckBoxProps = {
   value: string | number
   name: string
   label: string
+  checked?: boolean
   onChange: (info: {
     value: string | number
     checked: boolean
@@ -29,6 +30,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   label,
   value,
   name,
+  checked,
 }) => {
   const debouncedOnChange = useCallback(
     debounce((checked: boolean) => {
@@ -56,6 +58,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({
         name={name}
         onKeyPress={onKeyPress}
         onChange={onChange}
+        checked={checked}
       />
       <span>{label}</span>
     </Label>
