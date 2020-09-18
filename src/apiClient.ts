@@ -3,7 +3,7 @@ type FetchResult<R = null> = {
   err: R extends null ? true : false
   status: number
   data: R
-  meta?: any
+  meta?: unknown
 }
 
 // 該当する年の総人口を表すオブジェクト
@@ -18,16 +18,16 @@ export type PrefInfo = {
 }
 
 // ResasApiからのレスポンスのベースとなる型
-type ResasApiResPonseBase<T> = {
+type ResasApiResponseBase<T> = {
   message: null | string
   result: T
 }
 
 // 都道府県一覧APIからのレスポンス
-export type ResasApiPrefecturesResponse = ResasApiResPonseBase<PrefInfo[]>
+export type ResasApiPrefecturesResponse = ResasApiResponseBase<PrefInfo[]>
 
 // 人口構成APIからのレスポンス
-export type ResasApiPopulationResponse = ResasApiResPonseBase<{
+export type ResasApiPopulationResponse = ResasApiResponseBase<{
   boundaryYear: number
   data: { label: string; data: PopulationData[] }[]
 }>
@@ -39,6 +39,14 @@ export type PopulationInfo = {
 }
 
 export type FetchPrefPopulationResult = FetchResult<PopulationInfo>
+
+// helper オブジェクトからクエリパラメーターへ変換する
+const objToQueryParams = (paramObj: { [k: string]: string | number }) => {
+  return Object.entries(paramObj).reduce(
+    (q, [key, value]) => `${q}&${key}=${value}`,
+    "?"
+  )
+}
 
 // ResasAPIへフェッチする関数
 // urlに指定したエンドポイントにリクエストを投げる
@@ -71,6 +79,7 @@ export const fetchDataFromResasApi = <R>(
     })
 }
 
+// 都道府県一覧APIへリクエストする
 export const fetchPref = async () => {
   const res = await fetchDataFromResasApi<ResasApiPrefecturesResponse>(
     "prefectures"
@@ -79,7 +88,7 @@ export const fetchPref = async () => {
   return res
 }
 
-// APIのレスポンスから総人口のみを抽出する
+// helper APIのレスポンスから総人口のみを抽出する
 const extractPopulation = (
   result: ResasApiPopulationResponse["result"]["data"]
 ) => {
@@ -87,6 +96,7 @@ const extractPopulation = (
   return population && population.data
 }
 
+// 人口構成APIへリクエストする
 export const fetchPrefPopulation = async (prefInfo: PrefInfo) => {
   const params = objToQueryParams({
     prefCode: prefInfo.prefCode,
@@ -99,18 +109,11 @@ export const fetchPrefPopulation = async (prefInfo: PrefInfo) => {
 
   const population = extractPopulation(res.data.result.data)
 
-  if (!population) throw new Error("population undefined")
+  if (!population) return Promise.reject(res)
 
   const result: FetchPrefPopulationResult = {
     ...res,
     data: { prefInfo, population },
   }
   return result
-}
-
-const objToQueryParams = (paramObj: { [k: string]: string | number }) => {
-  return Object.entries(paramObj).reduce(
-    (q, [key, value]) => `${q}&${key}=${value}`,
-    "?"
-  )
 }

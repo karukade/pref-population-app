@@ -7,6 +7,7 @@ export const useElmWidth = <T extends HTMLElement>(): [
 ] => {
   const ref = useRef<T>(null)
   const [width, setWidth] = useState<number>(0)
+
   useLayoutEffect(() => {
     if (!ref.current) return
     const onResize = debounce(

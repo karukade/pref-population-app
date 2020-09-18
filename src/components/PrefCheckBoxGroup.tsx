@@ -19,7 +19,7 @@ const CheckBoxList = styled.ul`
 export type PrefCheckBoxGroupProps = {
   dispatch: React.Dispatch<Actions>
   name: string
-  prefMap: NonNullable<StateType["prefMap"]>
+  prefMap: StateType["prefMap"]
   fetchItem: StateType["fetchItem"]
   selected: StateType["selected"]
 }

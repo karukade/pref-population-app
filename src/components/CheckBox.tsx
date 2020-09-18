@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback } from "react"
 import { debounce } from "../utils"
 import styled from "styled-components"
 
@@ -46,8 +46,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   const onKeyPress = (e: KeyPressEvent) => {
     if (e.key === "Enter") {
       const target = e.target as HTMLInputElement
-      target.checked = !target.checked
-      debouncedOnChange(target.checked)
+      debouncedOnChange(!target.checked)
     }
   }
   return (

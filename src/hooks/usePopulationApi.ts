@@ -13,7 +13,7 @@ const fetchPopulation = async (
       payload: { type: "population", status: e?.status, meta: e?.meta },
     })
   })
-  if (!res) return // Too Many Requests
+  if (!res) return
   dispatch({ type: "addData", payload: res.data })
 }
 
@@ -23,7 +23,7 @@ export const usePopulationApi = (
 ): CheckBoxProps["onChange"] => {
   const onChange: CheckBoxProps["onChange"] = useCallback(
     ({ value, checked }) => {
-      if (typeof value !== "number") return
+      if (typeof value !== "number") return // type guard
 
       if (!checked) {
         dispatch({ type: "removeSelected", payload: value })

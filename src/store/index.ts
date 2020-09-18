@@ -11,15 +11,33 @@ export type ActionBase<T extends string, P = undefined> = P extends undefined
   : { type: T; payload: P }
 
 export type StateType = Readonly<{
+  // リクエスト中かどうか
   fetching: boolean
+
   fetchItem: PrefInfo | null
+
+  // データ取得済の都道府県コードのリスト
   fetched: PrefInfo["prefCode"][]
+
+  // リクエスト中の都道府県コードのリスト
   fetchingItems: PrefInfo["prefCode"][]
+
+  // 選択中の都道府県コード(リクエスト中の都道府県も含む)
   selected: PrefInfo["prefCode"][]
+
+  // 選択中かつデータ取得済の都道府県名。グラフに表示する都道府県。
   displayItems: PrefInfo["prefName"][]
+
+  // グラフに表示するデータ（取得したデータは全てここに格納する）
   data: ChartBase[] | null
+
+  // 複数並行してリクエストしている間に返ってきたデータを一時的に格納
   dataPool: PopulationInfo[]
+
+  // 都道府県一覧
   prefMap: Map<PrefInfo["prefCode"], PrefInfo["prefName"]>
+
+  // APIへのリクエストエラー
   requestError: { message: string; status?: number } | null
 }>
 
@@ -84,13 +102,12 @@ export const rootReducer = (state: StateType, action: Actions): StateType => {
       if (state.selected.includes(action.payload)) return state
       const selectedPref = action.payload
 
-      const fetchItem =
-        state.fetched.includes(selectedPref) && state.prefMap.has(selectedPref)
-          ? null
-          : {
-              prefCode: selectedPref,
-              prefName: state.prefMap.get(selectedPref) as string,
-            }
+      const fetchItem = state.fetched.includes(selectedPref)
+        ? null
+        : {
+            prefCode: selectedPref,
+            prefName: state.prefMap.get(selectedPref) as string,
+          }
 
       const fetchingItems = fetchItem
         ? [...state.fetchingItems, selectedPref]

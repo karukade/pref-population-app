@@ -1,5 +1,5 @@
 type ErrorType = "prefList" | "population"
-export type ErrorPayLoad = { type: ErrorType; status?: number; meta?: any }
+export type ErrorPayLoad = { type: ErrorType; status?: number; meta?: unknown }
 
 const errTypeMap = {
   prefList: "都道府県リスト",
