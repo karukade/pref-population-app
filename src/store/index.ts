@@ -42,7 +42,6 @@ export type StateType = Readonly<{
 }>
 
 export type Actions =
-  | ActionBase<"setFetching", boolean>
   | ActionBase<"addData", PopulationInfo>
   | ActionBase<"setPrefMap", ResasApiPrefecturesResponse["result"]>
   | ActionBase<"setSelected", number>
@@ -52,9 +51,6 @@ export type Actions =
 
 export const rootReducer = (state: StateType, action: Actions): StateType => {
   switch (action.type) {
-    case "setFetching":
-      return { ...state, fetching: action.payload }
-
     case "addData": {
       const fetchedPref = action.payload.prefInfo.prefCode
       const fetchingItems = state.fetchingItems.filter(
