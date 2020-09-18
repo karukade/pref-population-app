@@ -5,15 +5,7 @@ import { fetchPref } from "../apiClient"
 
 export const useAppState = (initialPref?: StateType["selected"]) => {
   const [
-    {
-      data,
-      prefMap,
-      fetchItem,
-      fetching,
-      requestError,
-      displayItems,
-      selected,
-    },
+    { data, prefMap, fetchItem, fetching, requestError, displayItems },
     dispatch,
   ] = useReducer(rootReducer, {
     fetching: false,
@@ -58,7 +50,6 @@ export const useAppState = (initialPref?: StateType["selected"]) => {
       fetching,
       requestError,
       displayItems,
-      selected,
     },
     dispatch,
   ] as const

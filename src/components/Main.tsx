@@ -19,15 +19,7 @@ const initialPref = [1]
 
 const Main: React.FC = () => {
   const [
-    {
-      data,
-      prefMap,
-      fetchItem,
-      fetching,
-      requestError,
-      displayItems,
-      selected,
-    },
+    { data, prefMap, fetchItem, fetching, requestError, displayItems },
     dispatch,
   ] = useAppState(initialPref)
 
@@ -40,7 +32,7 @@ const Main: React.FC = () => {
         name="prefecture"
         dispatch={dispatch}
         prefMap={prefMap}
-        selected={selected}
+        initialCheckedValues={initialPref}
         fetchItem={fetchItem}
       />
       <ChartContainer
