@@ -2,11 +2,15 @@ import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 
 import { useElmWidth } from "../hooks/useElmWidth"
-import Spinner from "./Spinner"
 import { backGround } from "../styles"
+import { StateType } from "../store"
+
+import Chart from "./Chart"
+import Spinner from "./Spinner"
 
 const Container = styled.div`
   position: relative;
+  min-height: 500px;
 `
 
 const Overlay = styled.div`
@@ -32,10 +36,19 @@ const Overlay = styled.div`
   }
 `
 
-const ChartContainer: React.FC<{
-  renderChart: (width: number) => React.ReactNode
+type ChartContainerProps = {
   fetching: boolean
-}> = ({ renderChart, fetching }) => {
+  data: StateType["data"]
+  displayItems: StateType["displayItems"]
+  prefMap: StateType["prefMap"]
+}
+
+const ChartContainer: React.FC<ChartContainerProps> = ({
+  fetching,
+  data,
+  displayItems,
+  prefMap,
+}) => {
   const [spinner, setSpinner] = useState<React.ReactNode>()
   const [elmRef, width] = useElmWidth<HTMLDivElement>()
 
@@ -56,7 +69,14 @@ const ChartContainer: React.FC<{
   return (
     <Container ref={elmRef}>
       {spinner}
-      {renderChart(width)}
+      {data && (
+        <Chart
+          data={data}
+          displayItems={displayItems}
+          prefMap={prefMap}
+          width={width}
+        />
+      )}
     </Container>
   )
 }

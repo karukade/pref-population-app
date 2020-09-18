@@ -14,7 +14,7 @@ const loadingAnimation = keyframes`
 const addUnitIfNeed = (value: number | string, unit = "px") =>
   typeof value === "number" ? `${value}${unit}` : value
 
-const SkeletonBase = styled.div<{
+export const SkeletonBase = styled.div<{
   width?: number | string
   height?: number | string
 }>`

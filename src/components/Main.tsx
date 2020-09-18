@@ -1,13 +1,13 @@
-import React from "react"
+import React, { Suspense } from "react"
 import styled from "styled-components"
 
 import { useAppState } from "../hooks/useAppState"
 
-import Chart from "./Chart"
-import ChartContainer from "./ChartContainer"
 import PrefCheckBoxGroup from "./PrefCheckBoxGroup"
 import ErrorBox from "./ErrorBox"
+import { SkeletonBase } from "./CheckBoxesSkeletons"
 
+const ChartContainer = React.lazy(() => import("./ChartContainer"))
 const Container = styled.main`
   max-width: 1200px;
   margin: auto;
@@ -35,19 +35,14 @@ const Main: React.FC = () => {
         initialCheckedValues={initialPref}
         fetchItem={fetchItem}
       />
-      <ChartContainer
-        fetching={fetching}
-        renderChart={(width) =>
-          data && (
-            <Chart
-              data={data}
-              displayItems={displayItems}
-              prefMap={prefMap}
-              width={width}
-            />
-          )
-        }
-      />
+      <Suspense fallback={<SkeletonBase height={500} />}>
+        <ChartContainer
+          fetching={fetching}
+          data={data}
+          displayItems={displayItems}
+          prefMap={prefMap}
+        />
+      </Suspense>
     </Container>
   )
 }
