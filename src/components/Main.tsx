@@ -19,7 +19,7 @@ const initialPref = [1]
 
 const Main: React.FC = () => {
   const [
-    { data, prefMap, fetchItem, fetching, requestError, displayItems },
+    { data, prefMap, fetching, requestError, displayItems },
     dispatch,
   ] = useAppState(initialPref)
 
@@ -33,7 +33,6 @@ const Main: React.FC = () => {
         dispatch={dispatch}
         prefMap={prefMap}
         initialCheckedValues={initialPref}
-        fetchItem={fetchItem}
       />
       <Suspense fallback={<SkeletonBase height={500} />}>
         <ChartContainer

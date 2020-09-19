@@ -3,7 +3,7 @@ import styled from "styled-components"
 
 import CheckBox from "./CheckBox"
 import CheckBoxesSkeletons from "./CheckBoxesSkeletons"
-import { usePopulationApi } from "../hooks/usePopulationApi"
+import { useToggleSelected } from "../hooks/useToggleSelected"
 import { StateType, Actions } from "../store"
 
 const CheckBoxList = styled.ul`
@@ -20,7 +20,6 @@ export type PrefCheckBoxGroupProps = {
   dispatch: React.Dispatch<Actions>
   name: string
   prefMap: StateType["prefMap"]
-  fetchItem: StateType["fetchItem"]
   initialCheckedValues: StateType["selected"]
 }
 
@@ -28,10 +27,9 @@ const PrefCheckBoxGroup: React.FC<PrefCheckBoxGroupProps> = ({
   prefMap,
   name,
   dispatch,
-  fetchItem,
   initialCheckedValues,
 }) => {
-  const onChange = usePopulationApi(dispatch, fetchItem)
+  const onChange = useToggleSelected(dispatch)
   const checkBoxes = () =>
     [...prefMap].map(([value, label]) => (
       <li key={value}>
